@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
+		http://www.springframework.org/schema/beans 
+		http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/tx 
+		http://www.springframework.org/schema/tx/spring-tx.xsd
+		http://www.springframework.org/schema/aop 
+		http://www.springframework.org/schema/aop/spring-aop.xsd
+		http://www.springframework.org/schema/context 
+		http://www.springframework.org/schema/context/spring-context.xsd
+		">
+	<!-- 1.数据层实现类继承HibernateDaoSupport就可以使用HibernateTemplate对象操作数据库 -->   
+    <!-- 2.在spring的配置文件数据层对应的bean中注入sessionFactory -->
+    
+    <!-- 引入式整合 -->
+    <!-- 3. 声明sessionFactory对应的bean -->
+    <!-- 4.使用引入式整合加载独立的hibernate.cfg.xml配置文件，初始化sessionFactory对象 -->    
+    
+    <!-- 5.使用注解式事务，开启注解事务管理的驱动，使用hibernate专用的事务管理器 -->
+    <!-- 6.使用注解格式添加事务 -->
+    
+    <tx:annotation-driven transaction-manager="txManage"/>
+	<bean id="txManage" class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+	   <property name="sessionFactory" ref="sessionFactory"></property>
+	</bean>
+	
+	
+	<!-- userAction action里需要用到service所以引入service的bean -->
+	<bean id="userAction" class="cn.itcast.ssh.web.UserAction" scope="prototype">
+		<property name="userService" ref="userServiceimpl"/>
+	</bean>
+	<!-- userservice实现类	 -->
+	<bean id="userServiceimpl" class="cn.itcast.ssh.service.userebo.UserServiceimpl">
+	   <property name="userDao" ref="userDao"></property>
+	</bean>
+	<!-- userdao -->
+	<bean id="userDao" class="cn.itcast.ssh.dao.daoimpl.UserDaoImpl">
+	   <!-- hibernateTemplate -->
+	   <property name="sessionFactory" ref="sessionFactory"/>
+	</bean>
+	<!-- 配置sessionfactory -->
+	<bean id="sessionFactory" class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
+	<!-- 加载配置文件 ：引入式整合，读取原始的hibernate配置文件-->
+	  <property name="configLocation" value="classpath:hibernate.cfg.xml"/>    
+	</bean>
+</beans>
+
+
+

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
+		http://www.springframework.org/schema/beans 
+		http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/tx 
+		http://www.springframework.org/schema/tx/spring-tx.xsd
+		http://www.springframework.org/schema/aop 
+		http://www.springframework.org/schema/aop/spring-aop.xsd
+		http://www.springframework.org/schema/context 
+		http://www.springframework.org/schema/context/spring-context.xsd
+		">
+	<!-- 1.数据层实现类继承HibernateDaoSupport就可以使用HibernateTemplate对象操作数据库 -->   
+    <!-- 2.在spring的配置文件数据层对应的bean中注入sessionFactory -->
+    
+    <!-- 独立整合式整合 -->
+    <!-- 3. 声明sessionFactory对应的bean -->
+    <!-- 4.将原始hibernate.cfg.xml中的信息加入到spring的核心配置中 -->      
+    <!-- 5.使用注解式事务，开启注解事务管理的驱动，使用hibernate专用的事务管理器 -->
+    <!-- 6.使用注解格式添加事务 -->
+    
+    <tx:annotation-driven transaction-manager="txManage"/>
+	<bean id="txManage" class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+	   <property name="sessionFactory" ref="sessionFactory"></property>
+	</bean>
+	
+	
+	<!-- userAction action里需要用到service所以引入service的bean -->
+	<bean id="userAction" class="cn.itcast.ssh.web.UserAction" scope="prototype">
+		<property name="userService" ref="userServiceimpl"/>
+	</bean>
+	<!-- userservice实现类	 -->
+	<bean id="userServiceimpl" class="cn.itcast.ssh.service.userebo.UserServiceimpl">
+	   <property name="userDao" ref="userDao"></property>
+	</bean>
+	<!-- userdao -->
+	<bean id="userDao" class="cn.itcast.ssh.dao.daoimpl.UserDaoImpl">
+	   <!-- hibernateTemplate -->
+	   <property name="sessionFactory" ref="sessionFactory"/>
+	</bean>
+	<!-- 配置sessionfactory 独立整合-->
+	
+	<bean id="sessionFactory" class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
+	    <!-- 数据库连接的配置 -->
+        <property name="dataSource" ref="dataSource"></property>
+        <!-- 可选配置 -->
+        <property name="hibernateProperties">
+            <props>
+              <!-- hibernate.属性前缀不要丢失 -->
+                <prop key="hibernate.dialect">org.hibernate.dialect.MySQLDialect</prop>
+                <prop key="hibernate.show_sql">true</prop>
+                <prop key="hibernate.format_sql">true</prop>
+            </props>
+        </property>
+        <!-- 资源注册 
+        <property name="mappingResources">
+            <list>
+                <value>cn/itcast/ssh/user/domain/UserModel.hbm.xml</value>
+            </list>
+        </property>
+       
+        <property name="mappingDirectoryLocations">
+            <list>
+                <value>classpath:cn/itcast/ssh/user/vo</value>
+            </list>
+        </property>
+        -->
+        <property name="mappingLocations">
+            <list>
+                <!-- <value>classpath:cn/itcast/ssh/user/vo/*Model.hbm.xml</value> -->
+                <!-- <value>classpath:cn/itcast/ssh/*/vo/*Model.hbm.xml</value> -->
+                <!-- <value>classpath:cn/itcast/*/*/vo/*Model.hbm.xml</value> -->
+                <value>classpath:cn/itcast/**/domain/*Model.hbm.xml</value>
+            </list>
+        </property>
+        <!-- 二级缓存:移入hbm.xml文件中 -->
+	</bean>
+	<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+	   <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+        <property name="url" value="jdbc:mysql://localhost:3306/springdb01"/>
+        <property name="username" value="root"/>
+        <property name="password" value="qqq"/>
+	</bean>
+</beans>
+
+
+
